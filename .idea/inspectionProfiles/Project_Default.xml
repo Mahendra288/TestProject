@@ -1,0 +1,35 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="9">
+            <item index="0" class="java.lang.String" itemvalue="boto3" />
+            <item index="1" class="java.lang.String" itemvalue="redis" />
+            <item index="2" class="java.lang.String" itemvalue="oauth2client" />
+            <item index="3" class="java.lang.String" itemvalue="django" />
+            <item index="4" class="java.lang.String" itemvalue="gspread" />
+            <item index="5" class="java.lang.String" itemvalue="pytest" />
+            <item index="6" class="java.lang.String" itemvalue="mock" />
+            <item index="7" class="java.lang.String" itemvalue="ib_common" />
+            <item index="8" class="java.lang.String" itemvalue="django-swagger-utils" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="nkb_resources.models.resource_models.ResourceParentResourceThroughModel.*" />
+          <option value="nkb_exam.models.exam_models.ExamQuestion.*" />
+          <option value="nkb_exam.models.configuration_models.ExamConfig.*" />
+          <option value="nkb_question.models.vocabulary_models.VocabularyQuestion.*" />
+          <option value="nkb_learning_resource.models.models.LearningResourceSetLearningResource.*" />
+          <option value="nkb_resources.models.resource_models.ResourceDependentResourceThroughModel.*" />
+          <option value="nkb_question.models.question_set_models.QuestionSetQuestion.*" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
