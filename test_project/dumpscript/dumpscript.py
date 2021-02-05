@@ -1,5 +1,6 @@
 import json
 import os
+from collections import defaultdict
 from typing import Dict
 
 from django.db.models import Q
@@ -7,32 +8,45 @@ from django.db.models import Q
 
 class DumpScript:
 
+    DUMP_DATA_DIR = "dumped_data"
+
     def __init__(self, model_fields_map, id_export_models=None):
         self.model_fields_map = model_fields_map
         self.id_export_models = (
             id_export_models if id_export_models else [])
 
     def dump_data(self):
-        dump_data_dir = "dumped_data"
+        dump_data_dir = self.DUMP_DATA_DIR
         self._create_dump_dir_if_not_exists(dump_data_dir)
 
         for model, query in self.model_fields_map.items():
-            export_file_path, model_abs_path = self._get_export_file_details(
-                model=model, dump_data_dir=dump_data_dir)
-            model_objects = self._get_model_objects(
-                model, query, model_abs_path)
-            obj_dicts = [obj.__dict__ for obj in model_objects]
-            self._update_obj_dicts_based_on_config(obj_dicts, model)
+            model_objects = self._get_model_objects(model, query)
+            self._dump_model_objects_data(model_objects)
             self._dump_related_objects_data(model_objects)
 
+        print("Data extracted successfully.")
+
+    def _dump_model_objects_data(self, model_objects):
+        model_class_map = defaultdict(list)
+        for obj in model_objects:
+            model_class_map[obj.__class__].append(obj.__dict__)
+        for model, obj_dicts in model_class_map.items():
+            export_file_path, model_abs_path = self._get_export_file_details(
+                model=model, dump_data_dir=self.DUMP_DATA_DIR)
+            self._update_obj_dicts_based_on_config(obj_dicts, model)
             with open(export_file_path, "w+") as file:
                 print("Dumping {} objects from {} model".format(
                     len(obj_dicts), model_abs_path))
                 json.dump(obj_dicts, file, indent=4)
-        print("Data extracted successfully.")
 
-    @staticmethod
-    def _get_model_objects(model, query, model_abs_path):
+    def _dump_related_objects_data(self, model_objects):
+        related_objs = []
+        for model_obj in model_objects:
+            # noinspection PyProtectedMember
+            fields = model_obj._meta.get_fields()
+            pass
+
+    def _get_model_objects(self, model, query):
         is_lookup_str = isinstance(query, Dict)
         is_query_obj = isinstance(query, Q)
 
@@ -44,6 +58,7 @@ class DumpScript:
             model_queryset = model.objects.all()
 
         if not model_queryset:
+            model_abs_path = self._get_model_abs_path(model)
             print(f"No records found from {model_abs_path} model.")
         return list(model_queryset)
 
@@ -61,15 +76,19 @@ class DumpScript:
         if not os.path.exists(dump_data_dir):
             os.makedirs(dump_data_dir)
 
-    @staticmethod
-    def _get_export_file_details(model, dump_data_dir):
-        model_abs_path = "{}.{}".format(
-            model.__module__.split('.')[0], model.__qualname__)
+    def _get_export_file_details(self, model, dump_data_dir):
+        model_abs_path = self._get_model_abs_path(model)
         file_path = model_abs_path.replace('.', '_').lower() + ".json"
         file_path = os.path.join(dump_data_dir, file_path)
         return file_path, model_abs_path
 
+    @staticmethod
+    def _get_model_abs_path(model):
+        model_abs_path = "{}.{}".format(
+            model.__module__.split('.')[0], model.__qualname__)
+        return model_abs_path
 
-from .models import Book
+
+from test_project.test_app.models import Book
 
 DumpScript(model_fields_map={Book: ""}).dump_data()
