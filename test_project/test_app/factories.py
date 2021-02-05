@@ -3,7 +3,7 @@ import random
 import factory
 from faker import Faker
 
-from test_project.test_app import models
+from . import models
 
 fake_generator = Faker()
 
@@ -39,6 +39,13 @@ class SponsorFactory(factory.DjangoModelFactory):
     budget_in_crores = round(random.uniform(9, 999), 2)
 
 
+class PublicationArticleFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = models.Article.publications.through
+
+    publication = factory.SubFactory(PublicationFactory)
+    article = factory.SubFactory(ArticleFactory)
+
+
 class PublicationSponsorFactory(factory.DjangoModelFactory):
     FACTORY_FOR = models.PublicationSponsor
 
@@ -53,18 +60,3 @@ class ReporterBioFactory(factory.DjangoModelFactory):
     reporter = factory.SubFactory(ReporterFactory)
     address = fake_generator.address()
     no_of_articles_written = random.randint(9, 99)
-
-
-def populate_data():
-
-    # create and store some reporters
-    # create and store some articles by linking the above reporters
-    # create and store some publications
-    # create and store some publications for affiliates
-    # set affiliates for some publications
-    # set some batch of publications randomly to every article
-    # create and store some sponsors
-    # create and store sponsor publications
-    # with above publications ans sponsors
-    # create reporter bios for every reporter
-    pass

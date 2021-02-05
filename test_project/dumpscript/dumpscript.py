@@ -10,8 +10,15 @@ class DumpScript:
 
     DUMP_DATA_DIR = "dumped_data"
 
-    def __init__(self, model_fields_map, id_export_models=None):
-        self.model_fields_map = model_fields_map
+    def __init__(
+            self, model_fields_map=None, id_export_models=None,
+            models_to_exclude=None
+    ):
+        self.models_to_exclude = (
+            models_to_exclude if models_to_exclude else [])
+        self.model_fields_map = (
+            model_fields_map if model_fields_map
+            else self._get_models_fields_map_for_all_models())
         self.id_export_models = (
             id_export_models if id_export_models else [])
 
@@ -26,11 +33,21 @@ class DumpScript:
 
         print("Data extracted successfully.")
 
+    def _dump_related_objects_data(self, model_objects):
+        related_objs = []
+        for model_obj in model_objects:
+            # noinspection PyProtectedMember
+            fields = model_obj._meta.get_fields()
+            pass
+
     def _dump_model_objects_data(self, model_objects):
         model_class_map = defaultdict(list)
         for obj in model_objects:
             model_class_map[obj.__class__].append(obj.__dict__)
         for model, obj_dicts in model_class_map.items():
+            is_excluded_model = model in self.models_to_exclude
+            if is_excluded_model:
+                continue
             export_file_path, model_abs_path = self._get_export_file_details(
                 model=model, dump_data_dir=self.DUMP_DATA_DIR)
             self._update_obj_dicts_based_on_config(obj_dicts, model)
@@ -38,13 +55,6 @@ class DumpScript:
                 print("Dumping {} objects from {} model".format(
                     len(obj_dicts), model_abs_path))
                 json.dump(obj_dicts, file, indent=4)
-
-    def _dump_related_objects_data(self, model_objects):
-        related_objs = []
-        for model_obj in model_objects:
-            # noinspection PyProtectedMember
-            fields = model_obj._meta.get_fields()
-            pass
 
     def _get_model_objects(self, model, query):
         is_lookup_str = isinstance(query, Dict)
@@ -88,7 +98,10 @@ class DumpScript:
             model.__module__.split('.')[0], model.__qualname__)
         return model_abs_path
 
-
-from test_project.test_app.models import Book
-
-DumpScript(model_fields_map={Book: ""}).dump_data()
+    def _get_models_fields_map_for_all_models(self):
+        from django.apps import apps
+        all_models_in_project = apps.get_models()
+        filtered_models = list(
+            set(all_models_in_project) - set(self.models_to_exclude))
+        model_fields_map = {model: "" for model in filtered_models}
+        return model_fields_map

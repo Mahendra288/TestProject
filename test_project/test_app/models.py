@@ -25,8 +25,8 @@ class Article(models.Model):
 
 class Publication(models.Model):
     title = models.CharField(max_length=30)
-    affiliates = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="head_publication",
+    affiliate = models.ForeignKey(
+        "self", on_delete=models.CASCADE, related_name="affiliates",
         null=True, blank=True)
     sponsors = models.ManyToManyField("Sponsor", through="PublicationSponsor")
 
